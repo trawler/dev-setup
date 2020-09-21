@@ -1,15 +1,15 @@
-resource "aws_vpc" "kalmog-vpc"{
-  cidr_block = "10.0.0.0/16"
+resource "aws_vpc" "kalmog-vpc" {
+  cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
-  enable_dns_support = true
+  enable_dns_support   = true
   tags = {
     Name = "kalmog-vpc"
   }
 }
 
 resource "aws_subnet" "kalmog-test-subnet" {
-  cidr_block = cidrsubnet(aws_vpc.kalmog-vpc.cidr_block, 3, 1)
-  vpc_id = aws_vpc.kalmog-vpc.id
+  cidr_block        = cidrsubnet(aws_vpc.kalmog-vpc.cidr_block, 3, 1)
+  vpc_id            = aws_vpc.kalmog-vpc.id
   availability_zone = "eu-west-1a"
 }
 
