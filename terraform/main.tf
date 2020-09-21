@@ -51,7 +51,7 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_instance" "kalmog-dev" {
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.micro"
+  instance_type = "t2.xlarge"
   tags = {
     Name = "kalmog-dev"
   }
@@ -72,7 +72,10 @@ resource "aws_instance" "kalmog-dev" {
     inline = [
       "sudo add-apt-repository -y ppa:longsleep/golang-backports && sudo apt update",
       "sudo apt install -y golang-go",
-      "sudo apt install -y make"
+      "sudo apt install -y make",
+      "curl -fsSL https://get.docker.com -o get-docker.sh",
+      "sudo sh get-docker.sh",
+      "sudo usermod -aG docker $USER"
     ]
   }
 }
