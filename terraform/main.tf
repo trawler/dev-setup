@@ -60,6 +60,11 @@ resource "aws_instance" "kalmog-dev" {
   vpc_security_group_ids      = [aws_security_group.kalmog_allow_ssh.id]
   associate_public_ip_address = true
 
+  root_block_device {
+    volume_type = "gp2"
+    volume_size = 30
+  }
+
   connection {
     type        = "ssh"
     user        = "ubuntu"
