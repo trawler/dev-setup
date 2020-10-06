@@ -20,7 +20,7 @@ resource "aws_security_group" "cluster_allow_ssh" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-    ingress {
+  ingress {
     description = "SSH from VPC"
     from_port   = 0
     to_port     = 0
@@ -28,7 +28,7 @@ resource "aws_security_group" "cluster_allow_ssh" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-/*
+  /*
   ingress {
     description = "K8s API from VPC"
     from_port   = 6443

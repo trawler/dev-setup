@@ -3,7 +3,7 @@ resource "aws_instance" "cluster-master" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.large"
   tags = {
-    Name = format("%s-master-%d", var.cluster_name, count.index)
+    Name = format("%s-controller-%d", var.cluster_name, count.index)
   }
   key_name                    = "kalmog-key"
   subnet_id                   = aws_subnet.cluster-subnet.id
@@ -25,6 +25,7 @@ resource "aws_instance" "cluster-master" {
 
   provisioner "remote-exec" {
     inline = [
+      "sudo hostnamectl set-hostname controller-${count.index}",
       "sudo add-apt-repository -y ppa:longsleep/golang-backports && sudo apt update",
       "sudo apt install -y golang-go",
       "sudo apt install -y make",
