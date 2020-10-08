@@ -18,12 +18,23 @@ jobs:
       TF_VERSION: 0.13.4
     name: "K8s Network Conformance Testing"
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "./terraform/test-cluster"
     steps:
+      - name: Get PR Reference
+        run: |
+          re='^[0-9]+$'
+          PR_NUMBER=$(echo ${GITHUB_REF} | cut -d / -f 3 )
+          ## if it's not a number, then set the PR reference manually
+          if ! [[ $PR_NUMBER =~ $re ]] ; then
+            GIT_REF="refs/pull/${{ github.event.inputs.prNumber }}/merge"
+            echo "github_ref=$GIT_REF" >> $GITHUB_ENV
+          else
+            # leave unchanged
+            echo "github_ref=$GITHUB_REF" >> $GITHUB_ENV
+          fi
       - name: Run git checkout
         uses: actions/checkout@v2
+        with:
+          ref: ${{ env.github_ref }}
       - name: Print slug/short variables
         run: |
           echo "Github Action variables"
@@ -39,12 +50,3 @@ jobs:
           echo " - github.sha: ${{ github.sha }}"
           echo " - github.event: ${{ github.event }}"
           echo " - github.event_path: ${{ github.event_path }}"
-      - name: Get PR Reference
-        run: |
-          PR_NUMBER=$(echo ${GITHUB_REF} | cut -d / -f 3 )
-          if [ -z "$PR_NUMBER" ]; then
-            echo "PR reference: refs/pull/${{ github.event.inputs.prNumber }}/merge"
-          else
-            echo "PR number is ${PR_NUMBER}"
-          fi
-
