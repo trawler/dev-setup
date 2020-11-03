@@ -19,6 +19,7 @@ jobs:
     steps:
       - name: Get PR Reference
         run: |
+          printenv
           # check if a an input to override the reference is set
           if [[ ${INPUT_PRNUMBER} != "" ]]; then
             GIT_REF="refs/pull/${{ github.event.inputs.prNumber }}/merge"
