@@ -48,17 +48,23 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
 }
 
+data "aws_route53_zone" "trawler" {
+  name         = "trawler.sh"
+  private_zone = false
+}
 
 resource "aws_instance" "kalmog-dev" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.xlarge"
   tags = {
     Name = "kalmog-dev"
+    pet  = true
   }
   key_name                    = "kalmog-key"
   subnet_id                   = aws_subnet.kalmog-test-subnet.id
   vpc_security_group_ids      = [aws_security_group.kalmog_allow_ssh.id]
   associate_public_ip_address = true
+  disable_api_termination     = true
 
   root_block_device {
     volume_type = "gp2"
@@ -90,6 +96,18 @@ resource "aws_eip" "kalmog-test-env" {
   vpc      = true
 }
 
-output "kalmog-external-ip" {
-  value = aws_eip.kalmog-test-env.public_ip
+resource "aws_route53_record" "kalmog-dev" {
+  zone_id = data.aws_route53_zone.trawler.zone_id
+  name    = "kalmog-dev.trawler.sh"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [aws_eip.kalmog-test-env.public_dns]
+}
+
+output "kalmog-external-dns" {
+  value = aws_instance.kalmog-dev.public_dns
+}
+
+output "kalmog-dev-fqdn" {
+  value = aws_route53_record.kalmog-dev.fqdn
 }
