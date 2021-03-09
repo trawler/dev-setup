@@ -80,3 +80,8 @@ data "aws_ami" "ubuntu" {
 
   owners = ["099720109477"]
 }
+
+data "aws_route53_zone" "cluster_domain" {
+  name         = var.cluster_domain
+  private_zone = false
+}

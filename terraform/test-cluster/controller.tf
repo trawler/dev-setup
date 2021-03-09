@@ -1,11 +1,13 @@
-resource "aws_instance" "cluster-master" {
-  count         = var.master_count
+resource "aws_instance" "cluster-controller" {
+  count         = var.controller_count
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.large"
   tags = {
     Name = format("%s-controller-%d", var.cluster_name, count.index)
+    pet  = true
   }
-  key_name                    = "kalmog-key"
+  disable_api_termination     = true
+  key_name                    = var.public_key_name
   subnet_id                   = aws_subnet.cluster-subnet.id
   vpc_security_group_ids      = [aws_security_group.cluster_allow_ssh.id]
   associate_public_ip_address = true
@@ -18,7 +20,7 @@ resource "aws_instance" "cluster-master" {
   connection {
     type        = "ssh"
     user        = "ubuntu"
-    private_key = file("~/.ssh/id_aws")
+    private_key = file(var.private_key_path)
     host        = self.public_ip
     agent       = true
   }
@@ -36,12 +38,25 @@ resource "aws_instance" "cluster-master" {
   }
 }
 
-resource "aws_eip" "master-ext" {
-  count    = var.master_count
-  instance = aws_instance.cluster-master[count.index].id
+resource "aws_eip" "controller-ext" {
+  count    = var.controller_count
+  instance = aws_instance.cluster-controller[count.index].id
   vpc      = true
 }
 
-output "cluster-external-ip" {
-  value = aws_eip.master-ext.*.public_ip
+resource "aws_route53_record" "cluster-controller-record" {
+  count   = var.controller_count
+  zone_id = data.aws_route53_zone.cluster_domain.zone_id
+  name    = format("controller-%d.%s", count.index, var.cluster_domain)
+  type    = "CNAME"
+  ttl     = "300"
+  records = [aws_eip.controller-ext[count.index].public_dns]
+}
+
+output "controllers-public-dns" {
+  value = aws_eip.controller-ext.*.public_dns
+}
+
+output "controllers-fqdn" {
+  value = aws_route53_record.cluster-controller-record[*].fqdn
 }
