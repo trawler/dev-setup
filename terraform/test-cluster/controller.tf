@@ -3,8 +3,9 @@ resource "aws_instance" "cluster-controller" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.large"
   tags = {
-    Name = format("%s-controller-%d", var.cluster_name, count.index)
-    pet  = true
+    name    = format("%s-controller-%d", var.cluster_name, count.index)
+    pet     = true
+    project = var.project_label
   }
   disable_api_termination     = true
   key_name                    = var.public_key_name
