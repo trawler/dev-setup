@@ -1,19 +1,9 @@
-variable "cluster_name" {
+variable "dev-env_name" {
   type    = string
-  default = "kalmog-k0s"
+  default = "kalmog-dev"
 }
 
-variable "controller_count" {
-  type    = number
-  default = 3
-}
-
-variable "worker_count" {
-  type    = number
-  default = 3
-}
-
-variable "cluster_domain" {
+variable "dev-env_domain" {
   type    = string
   default = "trawler.sh"
 }

@@ -11,8 +11,9 @@ resource "aws_instance" "cluster-workers" {
   disable_api_termination = true
 
   tags = {
-    Name = format("%s-worker-%d", var.cluster_name, count.index)
-    pet  = true
+    name    = format("%s-worker-%d", var.cluster_name, count.index)
+    pet     = true
+    project = var.project_label
   }
   key_name                    = var.public_key_name
   subnet_id                   = aws_subnet.cluster-subnet.id
