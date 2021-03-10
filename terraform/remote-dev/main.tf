@@ -3,8 +3,8 @@ provider "aws" {
 }
 
 resource "aws_key_pair" "kalmog-key" {
-  key_name   = "kalmog-key"
-  public_key = file("~/.ssh/id_aws.pub")
+  key_name   = var.public_key_name
+  public_key = file(format("%s.pub", var.private_key_path))
 }
 
 resource "aws_security_group" "kalmog_allow_ssh" {
@@ -49,7 +49,7 @@ data "aws_ami" "ubuntu" {
 }
 
 data "aws_route53_zone" "trawler" {
-  name         = "trawler.sh"
+  name         = var.dev-env_domain
   private_zone = false
 }
 
@@ -57,10 +57,11 @@ resource "aws_instance" "kalmog-dev" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.xlarge"
   tags = {
-    Name = "kalmog-dev"
-    pet  = true
+    name    = var.dev-env_name
+    pet     = true
+    project = var.project_label
   }
-  key_name                    = "kalmog-key"
+  key_name                    = var.public_key_name
   subnet_id                   = aws_subnet.kalmog-test-subnet.id
   vpc_security_group_ids      = [aws_security_group.kalmog_allow_ssh.id]
   associate_public_ip_address = true
@@ -74,7 +75,7 @@ resource "aws_instance" "kalmog-dev" {
   connection {
     type        = "ssh"
     user        = "ubuntu"
-    private_key = file("~/.ssh/id_aws")
+    private_key = file(var.private_key_path)
     host        = self.public_ip
     agent       = true
   }
@@ -98,7 +99,7 @@ resource "aws_eip" "kalmog-test-env" {
 
 resource "aws_route53_record" "kalmog-dev" {
   zone_id = data.aws_route53_zone.trawler.zone_id
-  name    = "kalmog-dev.trawler.sh"
+  name    = format("%s.%s", var.dev-env_name, var.dev-env_domain)
   type    = "CNAME"
   ttl     = "300"
   records = [aws_eip.kalmog-test-env.public_dns]

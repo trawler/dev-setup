@@ -3,7 +3,7 @@ resource "aws_vpc" "kalmog-vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
   tags = {
-    Name = "kalmog-dev-vpc"
+    Name = format("%s-vpc", var.dev-env_name)
   }
 }
 
@@ -16,7 +16,7 @@ resource "aws_subnet" "kalmog-test-subnet" {
 resource "aws_internet_gateway" "kalmog-test-env-gw" {
   vpc_id = aws_vpc.kalmog-vpc.id
   tags = {
-    Name = "kalmog-dev-env-gw"
+    Name = format("%s-gw", var.dev-env_name)
   }
 }
 
@@ -27,7 +27,7 @@ resource "aws_route_table" "route-table-kalmog-test-env" {
     gateway_id = aws_internet_gateway.kalmog-test-env-gw.id
   }
   tags = {
-    Name = "kalmog-dev-env-route-table"
+    Name = format("%s-route-table", var.dev-env_name)
   }
 }
 

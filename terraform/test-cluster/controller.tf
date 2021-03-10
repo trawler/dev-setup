@@ -3,18 +3,18 @@ resource "aws_instance" "cluster-controller" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.large"
   tags = {
-    Name = format("%s-controller-%d", var.cluster_name, count.index)
-    pet  = true
+    name    = format("%s-controller-%d", var.cluster_name, count.index)
+    pet     = true
+    project = var.project_label
   }
-  disable_api_termination     = true
-  key_name                    = var.public_key_name
+  key_name                    = var.public_key
   subnet_id                   = aws_subnet.cluster-subnet.id
   vpc_security_group_ids      = [aws_security_group.cluster_allow_ssh.id]
   associate_public_ip_address = true
 
   root_block_device {
     volume_type = "gp2"
-    volume_size = 10
+    volume_size = 50
   }
 
   connection {
