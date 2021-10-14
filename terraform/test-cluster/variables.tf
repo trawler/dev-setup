@@ -18,7 +18,7 @@ variable "cluster_domain" {
   default = "trawler.sh"
 }
 
-variable "public_key_name" {
+variable "public_key" {
   type    = string
   default = "kalmog-key"
 }
