@@ -1,6 +1,6 @@
 variable "cluster_name" {
   type    = string
-  default = "kalmog-mke"
+  default = "kalmog-k0s"
 }
 
 variable "master_count" {
@@ -11,4 +11,9 @@ variable "master_count" {
 variable "worker_count" {
   type    = number
   default = 3
+}
+
+variable "public_key" {
+  type    = string
+  default = "kalmog-key"
 }

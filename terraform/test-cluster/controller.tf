@@ -5,14 +5,15 @@ resource "aws_instance" "cluster-master" {
   tags = {
     Name = format("%s-controller-%d", var.cluster_name, count.index)
   }
-  key_name                    = "kalmog-key"
+  disable_api_termination     = false
+  key_name                    = var.public_key
   subnet_id                   = aws_subnet.cluster-subnet.id
   vpc_security_group_ids      = [aws_security_group.cluster_allow_ssh.id]
   associate_public_ip_address = true
 
   root_block_device {
     volume_type = "gp2"
-    volume_size = 10
+    volume_size = 50
   }
 
   connection {
