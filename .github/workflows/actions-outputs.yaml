@@ -1,0 +1,19 @@
+name: Test Workflow
+on:
+  pull_request:
+  push:
+
+jobs:
+  test_job:
+    name: "Test Job"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Outputs
+        id: vars
+        env:
+          APP_VERSION: v1.22.2+k0s.1 # test line
+        run: echo ::set-output name=k8s_version::$(echo ${APP_VERSION} | sed 's/\+.*//')
+      - name: Get Outputs
+        env:
+          K8S_VERSION: ${{ steps.vars.outputs.k8s_version }}
+        run: echo ${K8S_VERSION}
