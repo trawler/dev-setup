@@ -1,0 +1,69 @@
+  name: Release
+  on:
+    push:
+      tags:
+        - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  jobs:
+    release:
+      runs-on: ubuntu-latest
+      outputs:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        tag_name: ${{ steps.branch_name.outputs.TAG_NAME }}
+      name: release
+      steps:
+        - name: Branch name
+          id: branch_name
+          run: echo ::set-output name=TAG_NAME::${GITHUB_REF#refs/tags/}
+        - name: Create Release
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions
+          with:
+            tag_name: ${{ github.ref }}
+            release_name: ${{ github.ref }}
+            draft: true # So we can manually edit before publishing
+            prerelease: ${{ contains(github.ref, '-') }} # v0.1.2-beta1, 1.2.3-rc1
+
+    create_artifact:
+      needs: release
+      runs-on: ubuntu-latest
+      steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: build
+        run: echo "my_release" > release-e16a931e-f0f9-4584-a4e6-38098a2ebb24.txt
+
+      - name: Upload Release Assets
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./release.txt
+          asset_name: release-${{ needs.release.outputs.tag_name }}.txt
+          asset_content_type: text/plain
+      - name: Upload Artifact for use in Other Jobs
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-${{ needs.release.outputs.tag_name }}.txt
+          path: ./release-*.txt
+
+    fetch_artifact:
+      needs:
+        - release
+        - create_artifact
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: get_artifact
+          uses: actions/download-artifact@v2
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions
+          with:
+            name: release-${{ needs.release.outputs.tag_name }}.txt
+        - name: read artifact
+          run: cat ./release-*.txt
