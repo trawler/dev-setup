@@ -37,14 +37,12 @@
 
       - name: Upload Release Assets
         id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions
+        uses: svenstaro/upload-release-action@v2
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./release.txt
-          asset_name: release-${{ needs.release.outputs.tag_name }}.txt
-          asset_content_type: text/plain
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./release-*.txt
+          file_glob: true
+          tag: ${{ github.ref }}
       - name: Upload Artifact for use in Other Jobs
         uses: actions/upload-artifact@v2
         with:
