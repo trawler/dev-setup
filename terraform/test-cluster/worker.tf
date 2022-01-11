@@ -3,13 +3,13 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-*/
 resource "aws_instance" "cluster-workers" {
   count                   = var.worker_count
   ami                     = data.aws_ami.ubuntu.id
   instance_type           = "t2.large"
   disable_api_termination = false
 }
+*/
 
 resource "aws_instance" "cluster-workers" {
   count         = var.worker_count
