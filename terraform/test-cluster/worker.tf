@@ -14,21 +14,26 @@ resource "aws_instance" "cluster-workers" {
 resource "aws_instance" "cluster-workers" {
   count         = var.worker_count
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.large"
+  instance_type = var.node_flavor
+  user_data     = file("user_data/system-setup.sh")
   tags = {
-    name    = format("%s-worker-%d", var.cluster_name, count.index)
-    pet     = true
-    project = var.project_label
+    Name                                                   = format("%s-worker-%d", var.cluster_name_prefix, count.index)
+    pet                                                    = true
+    project                                                = var.project_label
+    format("kubernetes.io/cluster/%s", local.cluster_name) = "owned"
+    format("k8s.io/cluster/%s", local.cluster_name)        = "owned"
   }
   key_name                    = var.public_key
   subnet_id                   = aws_subnet.cluster-subnet.id
   vpc_security_group_ids      = [aws_security_group.cluster_allow_ssh.id]
   associate_public_ip_address = true
-  // availability_zone           = data.aws_availability_zones.available.names[count.index]
+  iam_instance_profile        = "k0s_cluster_node"
+
+  source_dest_check = false
 
   root_block_device {
     volume_type = "gp2"
-    volume_size = 30
+    volume_size = var.volume_size
   }
 
   connection {
@@ -39,17 +44,18 @@ resource "aws_instance" "cluster-workers" {
     agent       = true
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "sudo hostnamectl set-hostname worker-${count.index}",
-      "sudo add-apt-repository -y ppa:longsleep/golang-backports && sudo apt update",
-      "sudo apt install -y golang-go",
-      "sudo apt install -y make",
-      "curl -fsSL https://get.docker.com -o get-docker.sh",
-      "sudo sh get-docker.sh",
-      "sudo usermod -aG docker $USER"
-    ]
-  }
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     //"sudo hostnamectl set-hostname ${aws_instance.cluster-workers[count.index].private_dns}",
+  #     "sudo add-apt-repository -y ppa:longsleep/golang-backports && sudo apt update",
+  #     "sudo apt install -y golang-go",
+  #     "sudo apt install -y make",
+  #     "curl -fsSL https://get.docker.com -o get-docker.sh",
+  #     "sudo sh get-docker.sh",
+  #     "sudo usermod -aG docker $USER"
+  #   ]
+  # }
+
 }
 
 resource "aws_eip" "worker-ext" {
@@ -67,14 +73,3 @@ resource "aws_route53_record" "cluster-worker-record" {
   records = [aws_eip.worker-ext[count.index].public_dns]
 }
 
-output "worker-public-dns" {
-  value = aws_instance.cluster-workers.*.public_dns
-}
-
-output "workers-fqdn" {
-  value = aws_route53_record.cluster-worker-record[*].fqdn
-}
-
-output "worker-external-ip" {
-  value = aws_instance.cluster-workers.*.public_ip
-}

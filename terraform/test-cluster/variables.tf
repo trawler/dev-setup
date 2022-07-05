@@ -1,11 +1,19 @@
-variable "cluster_name" {
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
+}
+locals {
+  cluster_name = "${var.cluster_name_prefix}-${random_string.suffix.result}"
+}
+
+variable "cluster_name_prefix" {
   type    = string
   default = "kalmog-k0s"
 }
 
 variable "controller_count" {
   type    = number
-  default = 3
+  default = 1
 }
 
 variable "worker_count" {
@@ -32,3 +40,15 @@ variable "project_label" {
   type    = string
   default = "KOS"
 }
+
+
+variable "node_flavor" {
+  type    = string
+  default = "g3.4xlarge"
+}
+
+variable "volume_size" {
+  type    = string
+  default = "150"
+}
+

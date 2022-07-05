@@ -3,12 +3,12 @@ provider "aws" {
 }
 
 resource "aws_key_pair" "cluster-key" {
-  key_name   = "cluster-key"
+  key_name   = format("%s-key", local.cluster_name)
   public_key = file("~/.ssh/id_aws.pub")
 }
 
 resource "aws_security_group" "cluster_allow_ssh" {
-  name        = format("%s-allow-ssh", var.cluster_name)
+  name        = format("%s-allow-ssh", local.cluster_name)
   description = "Allow ssh inbound traffic"
   vpc_id      = aws_vpc.cluster-vpc.id
 
@@ -61,7 +61,7 @@ resource "aws_security_group" "cluster_allow_ssh" {
   }
 
   tags = {
-    Name = format("%s-allow-ssh", var.cluster_name)
+    Name = format("%s-allow-ssh", local.cluster_name)
   }
 }
 
