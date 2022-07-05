@@ -1,25 +1,8 @@
-data "template_cloudinit_config" "config" {
-  gzip          = true
-  base64_encode = true
-
-  # Main cloud-config configuration file.
-  part {
-    filename     = "ebs_mount.cfg"
-    content_type = "text/cloud-config"
-    content      = file("user_data/ebs-mount.sh")
-  }
-  part {
-    filename     = "system-setup.cfg"
-    content_type = "text/cloud-config"
-    content      = file("user_data/system-setup.sh")
-  }
-}
-
 resource "aws_instance" "cluster-controller" {
   count         = var.controller_count
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.node_flavor
-  user_data     = data.template_cloudinit_config.config.rendered
+  user_data     = file("user_data/controller.sh")
   tags = {
     Name                                                   = format("%s-controller-%d", var.cluster_name_prefix, count.index)
     pet                                                    = true
@@ -47,20 +30,6 @@ resource "aws_instance" "cluster-controller" {
     host        = self.public_ip
     agent       = true
   }
-
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     //"sudo hostnamectl set-hostname ${aws_instance.cluster-controller[count.index].private_dns}",
-  #     "sudo add-apt-repository -y ppa:longsleep/golang-backports && sudo apt update",
-  #     "sudo apt install -y golang-go",
-  #     "sudo apt install -y make",
-  #     "curl -fsSL https://get.docker.com -o get-docker.sh",
-  #     "sudo sh get-docker.sh",
-  #     "sudo usermod -aG docker $USER",
-  #     "sudo snap install kubectl --classic",
-  #     "sudo snap install helm --classic"
-  #   ]
-  # }
 }
 
 resource "aws_eip" "controller-ext" {

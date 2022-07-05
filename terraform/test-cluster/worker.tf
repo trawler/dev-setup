@@ -15,7 +15,7 @@ resource "aws_instance" "cluster-workers" {
   count         = var.worker_count
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.node_flavor
-  user_data     = file("user_data/system-setup.sh")
+  user_data     = file("user_data/worker.sh")
   tags = {
     Name                                                   = format("%s-worker-%d", var.cluster_name_prefix, count.index)
     pet                                                    = true
@@ -43,19 +43,6 @@ resource "aws_instance" "cluster-workers" {
     host        = self.public_ip
     agent       = true
   }
-
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     //"sudo hostnamectl set-hostname ${aws_instance.cluster-workers[count.index].private_dns}",
-  #     "sudo add-apt-repository -y ppa:longsleep/golang-backports && sudo apt update",
-  #     "sudo apt install -y golang-go",
-  #     "sudo apt install -y make",
-  #     "curl -fsSL https://get.docker.com -o get-docker.sh",
-  #     "sudo sh get-docker.sh",
-  #     "sudo usermod -aG docker $USER"
-  #   ]
-  # }
-
 }
 
 resource "aws_eip" "worker-ext" {
