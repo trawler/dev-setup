@@ -9,6 +9,6 @@ runcmd:
 # - sudo usermod -aG docker $USER
 - sudo snap install kubectl --classic
 - sudo snap install helm --classic
-- sudo chsh -s $(which zsh) $(whoami)
+- sudo chsh -s $(which zsh) ubuntu
 
 output : { all : '| tee -a /var/log/cloud-init-output.log' }
