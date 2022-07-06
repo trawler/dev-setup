@@ -15,6 +15,10 @@ runcmd:
 # - sudo usermod -aG docker $USER
 - sudo snap install kubectl --classic
 - sudo snap install helm --classic
-- sudo chsh -s $(which zsh) ubuntu
+- sudo chsh -s $(which zsh) $USER
+- curl -fsSL https://get.docker.com -o get-docker.sh
+- sudo sh get-docker.sh
+- sudo usermod -aG docker $USER
+
 
 output : { all : '| tee -a /var/log/cloud-init-output.log' }
