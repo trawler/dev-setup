@@ -2,16 +2,44 @@
 name: Fetch Images with Auth
 
 on:
-  workflow_run:
-    workflows:
-      - Test Secrets in Workflow
+  pull_request_target:
+
+  # workflow_run:
+  #   workflows:
+  #     - Test Secrets in Workflow
 
 jobs:
   get_image:
     name: Fetch Image
     runs-on: ubuntu-latest
     steps:
-      - name: Get Secret from Env variables
+      - name: print vars
+        run: |
+          echo ${{ github.event.workflow_run.repository.full_name }}
+          echo ${{ github.event.workflow_run.repository.name }}
+          echo ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # - name: Get SHA Reference
+      #   if: ${{ always() }}
+      #   id: sharef
+      #   run: |
+      #     if [ "$EVENT" == 'pull_request' ]
+      #     then
+      #       echo "::set-output name=sha::$(echo ${{github.event.pull_request.head.sha}})"
+      #     elif [ "$EVENT" == 'workflow_run' ]
+      #     then
+      #       echo "::set-output name=sha::$(echo ${{github.event.workflow_run.head_sha}})"
+      #     else
+      #       echo "::set-output name=sha::$(echo $GITHUB_SHA)"
+      #     fi
+      #   env:
+      #     EVENT: ${{ github.event_name }}
+      #     REF: ${{ github.ref }}
+
+      - name: Fetch Image from Private Repo
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -23,3 +51,13 @@ jobs:
             echo "docker username = $DOCKER_USERNAME"
             ./test_script.sh
           fi
+
+      # - name: Commit Action Status
+      #   uses: LouisBrunner/checks-action@v1.1.1
+      #   if: ${{ always() }}
+      #   with:
+      #     sha: ${{ steps.sharef.outputs.sha }}
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     name: Create Image Bundle
+      #     conclusion: ${{ job.status }}
+      #     details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}
