@@ -1,0 +1,25 @@
+---
+name: Fetch Images with Auth
+
+on:
+  workflow_run:
+    workflows:
+      - Test Secrets in Workflow
+
+jobs:
+  get_image:
+    name: Fetch Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Secret from Env variables
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          if [ "$DOCKER_USERNAME" = "" ]; then
+            echo "empty secret!"
+            exit 1
+          else
+            echo "docker username = $DOCKER_USERNAME"
+            ./test_script.sh
+          fi
