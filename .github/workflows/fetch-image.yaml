@@ -11,7 +11,12 @@ jobs:
     name: Fetch Image
     runs-on: ubuntu-latest
     steps:
-      - name: Get Secret from Env variables
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          repository: ${{ github.event.workflow_run.repository }}
+      - name: Fetch Image from Private Repo
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
